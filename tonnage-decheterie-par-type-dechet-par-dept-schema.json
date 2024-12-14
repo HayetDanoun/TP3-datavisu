@@ -1,0 +1,153 @@
+{
+  "type": "object",
+  "required": [],
+  "properties": {
+    "ANNEE": {
+      "x-originalName": "ANNEE",
+      "type": "string",
+      "x-cardinality": 7,
+      "x-refersTo": "http://www.w3.org/2000/01/rdf-schema#label",
+      "description": "Année de l'enquête \"Collecte\" nationale réalisée sur les données des années impaires auprès de l’ensemble des collectivités (EPCI) en France et dans les départements et régions d'outre-mer (DROM) en charge de la compétence déchets.",
+      "x-concept": {
+        "id": "label",
+        "title": "Libellé",
+        "primary": true
+      },
+      "x-capabilities": {
+        "textAgg": true
+      },
+      "examples": [
+        "2015",
+        "2021",
+        "2019",
+        "2017",
+        "2013",
+        "2009",
+        "2011"
+      ]
+    },
+    "C_REGION": {
+      "x-originalName": "C_REGION",
+      "type": "string",
+      "x-cardinality": 14,
+      "x-refersTo": "http://rdf.insee.fr/def/geo#codeRegion",
+      "x-concept": {
+        "id": "codeRegion",
+        "title": "Code région",
+        "primary": true
+      },
+      "x-capabilities": {
+        "textAgg": true
+      },
+      "examples": [
+        "76",
+        "84",
+        "75",
+        "44",
+        "27",
+        "11",
+        "24",
+        "93",
+        "52",
+        "28",
+        "32",
+        "97",
+        "53",
+        "94"
+      ]
+    },
+    "L_REGION": {
+      "x-originalName": "L_REGION",
+      "type": "string",
+      "x-cardinality": 14,
+      "x-refersTo": null,
+      "x-capabilities": {
+        "textAgg": true
+      },
+      "examples": [
+        "Occitanie",
+        "Auvergne-Rhône-Alpes",
+        "Nouvelle-Aquitaine",
+        "Grand Est",
+        "Bourgogne-Franche-Comté",
+        "Ile-de-France",
+        "Centre-Val de Loire",
+        "Provence-Alpes-Côte d'Azur",
+        "Pays de la Loire",
+        "Normandie",
+        "Hauts-de-France",
+        "DROM-COM",
+        "Bretagne",
+        "Corse"
+      ]
+    },
+    "C_DEPT": {
+      "x-originalName": "C_DEPT",
+      "type": "string",
+      "x-cardinality": 104,
+      "x-refersTo": "http://rdf.insee.fr/def/geo#codeDepartement",
+      "description": "Niveau d'agrégation des tonnages collectés.",
+      "x-concept": {
+        "id": "codeDepartement",
+        "title": "Code département",
+        "primary": true
+      },
+      "x-capabilities": {
+        "textAgg": true
+      }
+    },
+    "N_DEPT": {
+      "x-originalName": "N_DEPT",
+      "type": "string",
+      "x-cardinality": 104,
+      "x-refersTo": null,
+      "x-capabilities": {
+        "textAgg": true
+      }
+    },
+    "C_TYP_REG_DECHET": {
+      "x-originalName": "C_TYP_REG_DECHET",
+      "type": "string",
+      "x-cardinality": 8,
+      "x-refersTo": null,
+      "description": "Code et libellé du type de déchets collecté en déchèterie :\ndéchets dangereux - matériaux recyclables - déchets verts - encombrants - DEEE - déblais et gravats - autres déchets.\n",
+      "x-capabilities": {
+        "textAgg": true
+      },
+      "examples": [
+        "02A",
+        "02B",
+        "02D",
+        "02C",
+        "02F",
+        "02E",
+        "02Z",
+        "02G"
+      ]
+    },
+    "L_TYP_REG_DECHET": {
+      "x-originalName": "L_TYP_REG_DECHET",
+      "type": "string",
+      "x-cardinality": 8,
+      "x-refersTo": null,
+      "x-capabilities": {
+        "textAgg": true
+      },
+      "examples": [
+        "Déchets dangereux",
+        "Matériaux recyclables",
+        "Encombrants",
+        "DEEE",
+        "Déchets verts",
+        "Déblais et gravats",
+        "Autres déchets",
+        "Mobilier"
+      ]
+    },
+    "TONNAGE_T": {
+      "x-originalName": "TONNAGE_T",
+      "type": "number",
+      "x-cardinality": 5290
+    }
+  }
+}
