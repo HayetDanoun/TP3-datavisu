@@ -6,22 +6,41 @@
     <style>
       body {
         margin: 0;
-        position: fixed;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
+        background-color: #f0f0f0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
       }
+
+      #map-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 80vh; /* Limite à 80% de la hauteur de la fenêtre */
+        margin: auto;
+      }
+
       .departement {
         stroke: #fff;
         stroke-width: 0.5px;
       }
-      select {
+
+      .slider-container {
         position: absolute;
-        top: 10px;
-        left: 10px;
-        z-index: 1000;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80%;
+        text-align: center;
       }
+
+      .slider-container input {
+        width: 100%;
+      }
+
       div.tooltip {
         position: absolute;
         text-align: center;
@@ -35,23 +54,14 @@
         pointer-events: none;
         opacity: 0.9;
       }
+
       .hidden {
         display: none;
-      }
-      .slider-container {
-        position: absolute;
-        bottom: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 80%;
-        text-align: center;
-      }
-      .slider-container input {
-        width: 100%;
       }
     </style>
   </head>
   <body>
+    <div id="map-container"></div>
     <div class="slider-container">
       <input id="slider" type="range" value="0" min="0" max="6" step="1" />
       <br />
@@ -63,8 +73,9 @@
       const width = 800;
       const height = 600;
 
+      // Attache le SVG au conteneur #map-container
       const svg = d3
-        .select("body")
+        .select("#map-container")
         .append("svg")
         .attr("width", width)
         .attr("height", height);
@@ -141,7 +152,7 @@
             "#c6dbef",
             "#9ecae1",
             "#6baed6",
-            "#2171b5"
+            "#2171b5",
           ]);
 
         // Associer les valeurs annuelles aux départements
@@ -175,13 +186,14 @@
           })
           .on("mousemove", function (event, d) {
             const [x, y] = d3.pointer(event);
+
             tooltip
               .classed("hidden", false)
-              .style("left", x + 15 + "px")
-              .style("top", y - 35 + "px")
+              .style("left", x + 15 + "px") // Réduction du décalage horizontal
+              .style("top", y + 15 + "px") // Réduction du décalage vertical
               .html(
                 d.properties.value
-                  ? `${d.properties.nom} : ${d.properties.value} tonnes`
+                  ? `${d.properties.nom} : ${d.properties.value.toFixed(2)} tonnes`
                   : `${d.properties.nom} : Aucune donnée pour ${currentYear}`
               );
           })
