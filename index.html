@@ -6,26 +6,21 @@
     <style>
       body {
         margin: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        background-color: #f0f0f0;
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
       }
       .departement {
         stroke: #fff;
         stroke-width: 0.5px;
       }
-      .slider-container {
+      select {
         position: absolute;
-        bottom: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 80%;
-        text-align: center;
-      }
-      .slider-container input {
-        width: 100%;
+        top: 10px;
+        left: 10px;
+        z-index: 1000;
       }
       div.tooltip {
         position: absolute;
@@ -42,6 +37,17 @@
       }
       .hidden {
         display: none;
+      }
+      .slider-container {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80%;
+        text-align: center;
+      }
+      .slider-container input {
+        width: 100%;
       }
     </style>
   </head>
@@ -95,30 +101,37 @@
 
           csvData = data;
 
-          drawMap(2009);
+          drawMap(2009); // Dessiner la carte pour 2009 par défaut
 
+          // Configurer le slider
           const slider = d3.select("#slider");
           slider.on("input", function () {
             const yearIndex = +this.value;
             const selectedYear = 2009 + 2 * yearIndex;
-            updateViz(selectedYear);
+            updateViz(selectedYear); // Mettre à jour la visualisation pour l'année choisie
           });
         });
       });
 
       function updateViz(selectedYear) {
+        // Mettre à jour le texte sous le slider
         d3.select("#day").html(selectedYear);
+
+        // Appeler drawMap pour mettre à jour la carte
         drawMap(selectedYear);
       }
 
       function drawMap(currentYear) {
+        // Filtrer les données pour l'année choisie
         const cleanData = csvData.filter(
           (d) => d.ANNEE == currentYear && d.L_TYP_REG_DECHET === "DEEE"
         );
 
+        // Calculer min et max pour l'année sélectionnée
         const minValue = d3.min(cleanData, (d) => d.TONNAGE_T) || 0;
         const maxValue = d3.max(cleanData, (d) => d.TONNAGE_T) || 20000;
 
+        // Mettre à jour l'échelle de couleur
         color = d3
           .scaleQuantize()
           .domain([minValue, maxValue])
@@ -128,15 +141,19 @@
             "#c6dbef",
             "#9ecae1",
             "#6baed6",
-            "#2171b5",
+            "#2171b5"
           ]);
 
+        // Associer les valeurs annuelles aux départements
         geojsonData.features.forEach((feature) => {
           const departementCode = feature.properties.code;
+
+          // Trouver les données du département pour l'année sélectionnée
           const departmentData = csvData.filter(
             (d) => d.C_DEPT === departementCode && d.L_TYP_REG_DECHET === "DEEE"
           );
 
+          // Injecter la valeur pour l'année choisie
           const selectedYearData = departmentData.find(
             (d) => d.ANNEE == currentYear
           );
@@ -145,6 +162,7 @@
             : null;
         });
 
+        // Dessiner ou mettre à jour les chemins SVG
         const carte = svg.selectAll("path").data(geojsonData.features);
 
         carte
@@ -157,14 +175,13 @@
           })
           .on("mousemove", function (event, d) {
             const [x, y] = d3.pointer(event);
-
             tooltip
               .classed("hidden", false)
-              .style("left", x + 5 + "px") // Réduction du décalage horizontal
-              .style("top", y + 5 + "px") // Réduction du décalage vertical
+              .style("left", x + 15 + "px")
+              .style("top", y - 35 + "px")
               .html(
                 d.properties.value
-                  ? `${d.properties.nom} : ${d.properties.value.toFixed(2)} tonnes`
+                  ? `${d.properties.nom} : ${d.properties.value} tonnes`
                   : `${d.properties.nom} : Aucune donnée pour ${currentYear}`
               );
           })
