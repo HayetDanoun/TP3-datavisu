@@ -19,7 +19,7 @@
         justify-content: center;
         align-items: center;
         width: 100%;
-        height: 80vh; /* Limite à 80% de la hauteur de la fenêtre */
+        height: 80vh;
         margin: auto;
       }
 
@@ -46,7 +46,7 @@
         text-align: center;
         width: auto;
         height: auto;
-        padding: 50px;
+        padding: 5px;
         font: 12px sans-serif;
         background: #fff;
         border: 1px solid #ccc;
@@ -112,37 +112,30 @@
 
           csvData = data;
 
-          drawMap(2009); // Dessiner la carte pour 2009 par défaut
+          drawMap(2009);
 
-          // Configurer le slider
           const slider = d3.select("#slider");
           slider.on("input", function () {
             const yearIndex = +this.value;
             const selectedYear = 2009 + 2 * yearIndex;
-            updateViz(selectedYear); // Mettre à jour la visualisation pour l'année choisie
+            updateViz(selectedYear);
           });
         });
       });
 
       function updateViz(selectedYear) {
-        // Mettre à jour le texte sous le slider
         d3.select("#day").html(selectedYear);
-
-        // Appeler drawMap pour mettre à jour la carte
         drawMap(selectedYear);
       }
 
       function drawMap(currentYear) {
-        // Filtrer les données pour l'année choisie
         const cleanData = csvData.filter(
           (d) => d.ANNEE == currentYear && d.L_TYP_REG_DECHET === "DEEE"
         );
 
-        // Calculer min et max pour l'année sélectionnée
         const minValue = d3.min(cleanData, (d) => d.TONNAGE_T) || 0;
         const maxValue = d3.max(cleanData, (d) => d.TONNAGE_T) || 20000;
 
-        // Mettre à jour l'échelle de couleur
         color = d3
           .scaleQuantize()
           .domain([minValue, maxValue])
@@ -155,16 +148,13 @@
             "#2171b5",
           ]);
 
-        // Associer les valeurs annuelles aux départements
         geojsonData.features.forEach((feature) => {
           const departementCode = feature.properties.code;
 
-          // Trouver les données du département pour l'année sélectionnée
           const departmentData = csvData.filter(
             (d) => d.C_DEPT === departementCode && d.L_TYP_REG_DECHET === "DEEE"
           );
 
-          // Injecter la valeur pour l'année choisie
           const selectedYearData = departmentData.find(
             (d) => d.ANNEE == currentYear
           );
@@ -173,7 +163,6 @@
             : null;
         });
 
-        // Dessiner ou mettre à jour les chemins SVG
         const carte = svg.selectAll("path").data(geojsonData.features);
 
         carte
@@ -189,8 +178,8 @@
 
             tooltip
               .classed("hidden", false)
-              .style("left", x + 15 + "px") // Réduction du décalage horizontal
-              .style("top", y + 15 + "px") // Réduction du décalage vertical
+              .style("left", x + 150 + "px") // 150px à droite de la souris
+              .style("top", y + 50 + "px") // 50px en bas de la souris
               .html(
                 d.properties.value
                   ? `${d.properties.nom} : ${d.properties.value.toFixed(2)} tonnes`
