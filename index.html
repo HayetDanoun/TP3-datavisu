@@ -6,11 +6,11 @@
     <style>
       body {
         margin: 0;
-        display: flex; /* Pour activer le centrage flexbox */
+        display: flex; /* Flexbox pour le centrage */
         justify-content: center; /* Centrer horizontalement */
-        align-items: center; /* Centrer verticalement */
-        height: 100vh; /* Occuper toute la hauteur de la fenêtre */
-        background-color: #f0f0f0; /* Couleur de fond pour mieux voir la carte */
+        align-items: center; /* Centrer verticalement (optionnel) */
+        height: 100vh; /* Hauteur pleine page */
+        background-color: #f0f0f0; /* Fond pour visualiser facilement */
       }
       .departement {
         stroke: #fff;
@@ -57,7 +57,6 @@
       const width = 800;
       const height = 600;
 
-      // Créer le conteneur SVG
       const svg = d3
         .select("body")
         .append("svg")
@@ -71,9 +70,9 @@
 
       const projection = d3
         .geoConicConformal()
-        .center([2.454071, 46.279229]) // Centrer sur la France
-        .scale(2800) // Zoom pour que la France occupe le SVG
-        .translate([width / 2, height / 2]); // Centrer dans le conteneur SVG
+        .center([2.454071, 46.279229]) // Centré sur la France
+        .scale(2800) // Zoom adapté
+        .translate([width / 2, height / 2]); // Centrer dans le SVG
 
       const path = d3.geoPath().projection(projection);
 
