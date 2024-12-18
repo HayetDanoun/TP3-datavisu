@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="utf-8" />
     <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -10,16 +10,18 @@
         height: 100vh;
         display: flex;
         flex-direction: column;
-        justify-content: center;
         align-items: center;
       }
 
       #map-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
         width: 100%;
         height: 80vh;
+        margin: auto;
+        position: relative;
+      }
+
+      svg {
+        display: block;
         margin: auto;
       }
 
@@ -29,12 +31,10 @@
       }
 
       .slider-container {
-        position: absolute;
-        bottom: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 80%;
+        position: relative;
         text-align: center;
+        width: 80%;
+        margin: 20px auto;
       }
 
       .slider-container input {
@@ -44,8 +44,6 @@
       div.tooltip {
         position: absolute;
         text-align: center;
-        width: auto;
-        height: auto;
         padding: 5px;
         font: 12px sans-serif;
         background: #fff;
@@ -70,21 +68,24 @@
     <div class="tooltip hidden"></div>
 
     <script>
+      // Paramètres et setup de base
       const width = 800;
       const height = 600;
 
-      // Attache le SVG au conteneur #map-container
+      // Années disponibles
+      const years = [2009, 2011, 2013, 2015, 2017, 2019, 2021];
+
+      // Création du SVG
       const svg = d3
         .select("#map-container")
         .append("svg")
         .attr("width", width)
         .attr("height", height);
 
-      const tooltip = d3
-        .select("body")
-        .append("div")
-        .attr("class", "tooltip hidden");
+      // Tooltip
+      const tooltip = d3.select(".tooltip");
 
+      // Projection de la carte
       const projection = d3
         .geoConicConformal()
         .center([2.454071, 46.279229])
@@ -95,31 +96,43 @@
 
       let geojsonData;
       let csvData;
+      let dataByDept = {}; // pour stocker les données par département et par année
       let color;
 
-      const years = [2009, 2011, 2013, 2015, 2017, 2019, 2021];
-
-      d3.json("departements-version-simplifiee.geojson").then(function (
-        geojson
-      ) {
+      // Chargement des données
+      Promise.all([
+        d3.json("departements-version-simplifiee.geojson"),
+        d3.csv("mesDonnes.csv")
+      ]).then(([geojson, data]) => {
         geojsonData = geojson;
 
-        d3.csv("mesDonnes.csv").then(function (data) {
-          data.forEach((d) => {
-            d.TONNAGE_T = parseFloat(d.TONNAGE_T.replace(",", "."));
-            d.C_DEPT = d.C_DEPT.padStart(2, "0");
-          });
+        // Nettoyage des données CSV
+        data.forEach((d) => {
+          d.TONNAGE_T = parseFloat(d.TONNAGE_T.replace(",", "."));
+          d.C_DEPT = d.C_DEPT.padStart(2, "0");
+        });
 
-          csvData = data;
+        csvData = data;
 
-          drawMap(2009);
+        // Regrouper par département et par année
+        csvData.forEach((d) => {
+          if (d.L_TYP_REG_DECHET === "DEEE") {
+            if (!dataByDept[d.C_DEPT]) {
+              dataByDept[d.C_DEPT] = {};
+            }
+            dataByDept[d.C_DEPT][d.ANNEE] = d.TONNAGE_T;
+          }
+        });
 
-          const slider = d3.select("#slider");
-          slider.on("input", function () {
-            const yearIndex = +this.value;
-            const selectedYear = 2009 + 2 * yearIndex;
-            updateViz(selectedYear);
-          });
+        // Dessin initial de la carte (année 2009)
+        drawMap(2009);
+
+        // Mise à jour via le slider
+        const slider = d3.select("#slider");
+        slider.on("input", function () {
+          const yearIndex = +this.value;
+          const selectedYear = years[yearIndex];
+          updateViz(selectedYear);
         });
       });
 
@@ -128,14 +141,21 @@
         drawMap(selectedYear);
       }
 
+      // Fonction drawMap
       function drawMap(currentYear) {
-        const cleanData = csvData.filter(
-          (d) => d.ANNEE == currentYear && d.L_TYP_REG_DECHET === "DEEE"
-        );
+        // Extraire les données pour l'année courante
+        const currentYearData = [];
+        for (let dept in dataByDept) {
+          if (dataByDept[dept][currentYear] !== undefined) {
+            currentYearData.push(dataByDept[dept][currentYear]);
+          }
+        }
 
-        const minValue = d3.min(cleanData, (d) => d.TONNAGE_T) || 0;
-        const maxValue = d3.max(cleanData, (d) => d.TONNAGE_T) || 20000;
+        // Déterminer min et max
+        const minValue = d3.min(currentYearData) || 0;
+        const maxValue = d3.max(currentYearData) || 20000;
 
+        // Échelle de couleurs
         color = d3
           .scaleQuantize()
           .domain([minValue, maxValue])
@@ -145,24 +165,19 @@
             "#c6dbef",
             "#9ecae1",
             "#6baed6",
-            "#2171b5",
+            "#2171b5"
           ]);
 
+        // Mise à jour du GeoJSON
         geojsonData.features.forEach((feature) => {
           const departementCode = feature.properties.code;
-
-          const departmentData = csvData.filter(
-            (d) => d.C_DEPT === departementCode && d.L_TYP_REG_DECHET === "DEEE"
-          );
-
-          const selectedYearData = departmentData.find(
-            (d) => d.ANNEE == currentYear
-          );
-          feature.properties.value = selectedYearData
-            ? selectedYearData.TONNAGE_T
+          const value = dataByDept[departementCode]
+            ? dataByDept[departementCode][currentYear]
             : null;
+          feature.properties.value = value;
         });
 
+        // Dessin de la carte
         const carte = svg.selectAll("path").data(geojsonData.features);
 
         carte
@@ -173,21 +188,33 @@
             const value = d.properties.value;
             return value ? color(value) : "#ccc";
           })
+          .on("mouseover", function (event, d) {
+            // Affiche le tooltip
+            tooltip.classed("hidden", false);
+            // Colorie la région en marron
+            d3.select(this).style("fill", "brown");
+          })
           .on("mousemove", function (event, d) {
             const [x, y] = d3.pointer(event);
-
             tooltip
               .classed("hidden", false)
-              .style("left", x + 540 + "px") // 150px à droite de la souris
-              .style("top", y + 140 + "px") // 50px en bas de la souris
+              .style("left", event.pageX + 10 + "px")
+              .style("top", event.pageY + 10 + "px")
               .html(
                 d.properties.value
-                  ? `${d.properties.nom} : ${d.properties.value.toFixed(2)} tonnes`
-                  : `${d.properties.nom} : Aucune donnée pour ${currentYear}`
+                  ? `${d.properties.nom} (${
+                      d.properties.code
+                    })<br>${d.properties.value.toFixed(
+                      2
+                    )} tonnes en ${currentYear}`
+                  : `${d.properties.nom} (${d.properties.code})<br>Aucune donnée pour ${currentYear}`
               );
           })
-          .on("mouseout", function () {
+          .on("mouseout", function (event, d) {
             tooltip.classed("hidden", true);
+            // Réinitialise la couleur du département
+            const value = d.properties.value;
+            d3.select(this).style("fill", value ? color(value) : "#808080");
           });
 
         svg.on("mouseleave", function () {
